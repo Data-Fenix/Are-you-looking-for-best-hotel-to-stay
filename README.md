@@ -42,6 +42,7 @@ For each textual review, we want to predict if it corresponds to a good review (
 
 * bad reviews have overall ratings < 5
 * good reviews have overall ratings >= 5
+
 The challenge here is to be able to predict this information using only the raw textual data from the review. Let's get it started!
 
 ## Motivation
