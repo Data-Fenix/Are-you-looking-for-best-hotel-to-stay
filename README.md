@@ -3,7 +3,9 @@
 [<img target="_blank" src="https://github.com/Data-Fenix/Are-you-looking-for-best-hotel-to-stay/blob/main/hotel_review_analysis.png">](https://github.com/Data-Fenix/Are-you-looking-for-best-hotel-to-stay/blob/main/hotel_review_analysis.png)
 
 ## Table of Content
-  * [Overview](#overview)
+  * [What is sentiment analysis](#what-is-sentiment-analysis)
+  * [Dataset](#dataset)
+  * [Problem-Statement](#problem-statement)
   * [Motivation](#motivation)
   * [Technical Aspect](#technical-aspect)
   * [Installation](#installation)
@@ -18,77 +20,82 @@
   * [Credits](#credits)
 
 
-## Overview
+## What is sentiment analysis?
 
-Previously we developed a customer churn prediction model using classification technique and already deploy that model in the production enviornment([To see that project, please click here](https://github.com/Data-Fenix/aws-sagemaker-pipeline)).
+Sentiment analysis is the technique of capturing the emotional coloring behind the text. It applies natural language processing (NLP) and machine learning to detect, extract, and study customers’ perceptions about a product or service. That’s why this type of examination is often called opinion mining or emotional AI.
 
-Now our client/organization needs the prediction in each week. If the prediction is to be done in each week and if the process(full pipeline) has to be done every week, it will consume so much time, effort and resources. Therefore, we can retrain the model quarterly (may depend on the requirement of the company). According to these requirements we can separate these workflows into two separate jobs.
+The goal of opinion mining is to identify the text polarity, which means to classify it as positive, negative, or neutral. For example, we can say that a comment like
 
-1) Training Job: Preprocessing and model training (run quarterly)
-2) Inference Job: Preprocessing and inferencing (run daily/weekly)
+* “We stayed at this hotel for five days” is neutral,
 
-##### More details: 
-* Pipeline will run weekly and give the predictions base for each week
-* This scheduling time will change according to the requirements of your organization.
+* “I liked staying here” is positive, and
 
-According to the business requirements and considering the cost factor, two separate pipelines are developed for training and inference jobs. Following sections show how to deploy **“inference pipelines”** in AWS Sagemaker and the uniqueness of this is, we use **“bring your own code concept to orchestrate the ML workflow”**.
+* “I disliked the hotel” is negative.
  
 ## Dataset
 
-This is data gathered from 7043 telco customers and dataset has 21 features (columns). Each row represents a customer, each column contains customer’s attributes described on the column Metadata.
+We will use here some hotel reviews data. Each observation consists in one customer review for one hotel. Each customer review is composed of a textual feedback of the customer's experience at the hotel and an overall rating. The data can be found here: https://www.kaggle.com/jiashenliu/515k-hotel-reviews-data-in-europe
 
-The “Churn” column is our target variable and it has two outcomes. Therefore this is a binary classification problem and using below link,you can easily download the dataset. https://www.kaggle.com/blastchar/telco-customer-churn
+
+## Problem Statement
+For each textual review, we want to predict if it corresponds to a good review (the customer is happy) or to a bad one (the customer is not satisfied). The reviews overall ratings can range from 2.5/10 to 10/10. In order to simplify the problem we will split those into two categories:
+
+* bad reviews have overall ratings < 5
+* good reviews have overall ratings >= 5
+The challenge here is to be able to predict this information using only the raw textual data from the review. Let's get it started!
 
 ## Motivation
 
 When I was searching about AWS Sagemaker, I struggle a lot as lack of references in this feild. It has some references, but there are missing few things. Therefore I need to fullfil that gap. So now I have some experience in this feild and as a MLOps team memeber, I migrated a lot of projects into cloud. I saved data scientists' valuable time by automating and scheduling their ML projects. So now I need to share that experience and knowledge with you and this is my first step of that journey.
+
 ## Technical Aspects
 
-This project highly relies on AWS cloud platform and in here we don’t train any model. We use previously developed projects from scratch and trying to deploy it in AWS.
-1) Used s3 bucket to store the input/output data, models and model artifacts.
-2) Used Sagemaker to implement and modify the existing scripts. And also automated the Python scripts.
-3) Containerize all the scripts using Docker images and stored them in ECR repository
-4) Used build your own container concept in AWS
-5) Used AWS Sagemaker Studio to view the Sagemaker Pipelines, execution history, predicted output, etc.
+<b> Step 1 </b> — data collection. First, you have to gather real reviews left by hotel guests. The best way to do it is to use feedback from your website. If this option is unavailable, you may try to partner with resources that have ownership of such data. The common method of collecting datasets — scraping — is not recommended as it may entail legal issues. Under the GDPR and CCPA rules you can’t apply this technique to personal data. You also may unwittingly violate property rights of website owners.
+
+<b> Step 2 </b>— sentiment annotation. To make opinions hidden in a review visible to machines, you need to manually assign sentiment labels (positive, neutral or negative) to words and phrases. Data labeling for sentiments is considered reliable when more than one human judge has annotated the dataset. The rule of thumb is to engage three annotators.
+
+<b> Step 3 </b>— text cleansing. Raw hotel reviews contain tons of irrelevant or just meaningless data that can badly affect model accuracy. So, we need to clean them up, which includes:
+* removing noise — or things like special characters, hyperlinks, tags, numbers, whitespaces, and punctuation;
+* removing stop words which include articles, pronouns, conjunctions, prepositions. etc. One of the most popular NLP libraries, NLTK (acronym for Natural Language Toolkit) lists 179 stop words for the English language;
+* lowercasing to avoid lower case/upper case differences between words with the same meaning;
+* normalization — or transforming words into a canonical form. For example, a normalized form of 2morrow and 2mrw is tomorrow;
+* stemming or reducing each word to its stem by chopping off endings (prefixes and suffixes). The technique often produces grammatically incorrect results — for example, having will be stemmed to hav; and
+* lemmatization — meaning returning a word to its dictionary form. Say, the lemma for swimming, swum, and swam is swim.
+
 
 ## Installation
 
 #### Requirements
 
-1. An AWS account
-2. Python 3.5+
-3. Docker (optional)
+1. Python 3.5+
 
+#### Required Libraries
 
-Only thing you need to satisfy in this list is you must have an AWS account. If you don't have an account you can create it free, using below link:
-https://aws.amazon.com/free/
+* pandas
+* sklearn
+* nltk
+* string
+* gensim
+* seaborn
+* matplotlib
     
 ## Run
-1) Upload/push/clone previously implemented mobile price prediction project into AWS Sagemaker instance or JupyterLab environment.
-2) Run build_docker.ipynb
-3) Execute pipeline_inference.ipynb
-4) See the workflow using AWS Sagemaker stuido
-* (i) Open Sagemaker Studio
-* (ii) Choose Pipeline option then you can see the execution list
-* (iii) Select the executing one, see the visualization
-* (iv) If you need to see more details about each stage, click on the each bubble and right hand side you can see all the details of each stage
+1) Upload/push/clone previously implemented mobile price prediction project into your JupyterLab environment.
+2) Execute Hotel Review Sentimental Analysis.ipynb
 
-## Deployment on AWS Sagemaker
-
-Will disscuss more details in the pipeline_inference.ipynb
 
 ## Directory Tree
 
 ```
-├── adults-income.ipynb
-└── adults-income.png
+├── Hotel Review Sentimental Analysis.ipynb
+├── README.md
+└── hotel_review_analysis.png
 ```
 
 ## To Do
 
 Need to add,
-1) Need to add evalution step as a seperate component
-2) Need to add accuracy condition to the workflow
+1) Need to deploy this project in AWS platform
 
 Don't worry, we will discss above topics and many more in the future sections.
 
@@ -111,5 +118,6 @@ Copyright 2022 Anuradha Dissanayake and Shashi Withange
 
 ## Credits
 
-1) https://www.kaggle.com/code/aditimulye/adult-income-dataset-from-scratch
-2) https://www.kaggle.com/code/sumitm004/eda-and-income-predictions-86-78-accuracy
+1) https://www.kaggle.com/code/jonathanoheix/sentiment-analysis-with-hotel-reviews/notebook
+2) https://www.kaggle.com/code/suyogdahal/hotel-reviews-sentiment-analysis/notebook
+3) https://www.altexsoft.com/blog/sentiment-analysis-hotel-reviews/
